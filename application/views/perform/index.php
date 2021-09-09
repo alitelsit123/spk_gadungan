@@ -34,7 +34,7 @@ $this->load->view('dist/header');
                     <tr>
                       <td><?= $row['nama'] ?></td>
                       <td><?= $row['result']['value'] ?></td>
-                      <td><?= $row['result']['default_type'] ?></td>
+                      <td><?= $row['result']['type'] ?></td>
                       <td><?= $row['status'] ?></td>
                     </tr>
                     <?php endforeach; ?>
