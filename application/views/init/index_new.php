@@ -14,7 +14,7 @@ $this->load->view('dist/header');
         <div class="d-flex align-items-center">
           <label for="" style="width: 100px;">Data Train</label>
           <input type="number" name="train_data" id="train_data" class="flex-grow-1 form-control mr-2 w-100" max="<?= $max_people ?>" min="1" 
-          value="<?= $this->session->total_train_data ?? '' ?>"
+          value="<?= $max_people ?>"
           placeholder="Max <?= $max_people ?>">
           <button type="button" class="btn btn-info ml-2" onClick="document.getElementById('train_data').value = <?= $max_people ?>">Max</button>
           <button type="button" class="btn btn-warning ml-2" onClick="document.location.href='<?= base_url('initialize/reset') ?>'">Reset</button>
