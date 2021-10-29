@@ -26,6 +26,13 @@ class DataTraining extends CI_Controller
 		$this->load->view('dist/footer');
 	}
 
+	function tambahdata () {
+		$this->load->view('training/tambahdata');
+		$this->load->view('dist/header');
+		$this->load->view('dist/sidebar');
+		$this->load->view('dist/footer');
+	}
+
 	public function validation_form(){
 		// $this->form_validation->set_rules("id_training", "Id Training", "required|is_unique[tbl_training.id_training]|max_length[5]");
 		$this->form_validation->set_rules("nama", "Nama ", "required");

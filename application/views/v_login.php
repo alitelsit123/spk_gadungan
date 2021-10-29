@@ -26,7 +26,7 @@ $this->load->view('dist/header_auth');
               </div>
               <div class="form-group">
                 <label>Password</label>
-                <input type="text" name="password" class="form-control" autocomplete="off">
+                <input type="password" name="password" class="form-control" autocomplete="off">
                 <small><span class="text-danger"><?= form_error('password'); ?></span></small>
               </div>
               <button type="submit" class="btn btn-primary">Login</button>

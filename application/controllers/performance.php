@@ -14,14 +14,13 @@ class performance extends CI_Controller
 			redirect('login');
 		}
 		
-		// $this->load->model('Uji_Model');
 		$this->load->model('Training_Model');
 	}
 
   public function index() {
-    // var_dump($this->session->userdata('total_data_train'));return;
+    
     if (empty($this->session->performance)) {
-      $this->session->set_flashdata(['msg' => 'Dibutuhkan Total Data Trains']);
+      $this->session->set_flashdata(['msg' => 'Dibutuhkan Jumlah Data Untuk Proses Klasifikasi!']);
       redirect(base_url('initialize'));
     }
     $trainings = $this->Training_Model->getAllData();
@@ -38,7 +37,23 @@ class performance extends CI_Controller
   }
 
   public function pickTrainData() {
-    return array_slice($this->Training_Model->getAllDataArray(), 0, $this->session->total_data_train);
+    // return array_slice($this->Training_Model->getAllDataArray(), 0, $this->session->total_data_train);
+    $init_array = $this->Training_Model->getAllDataArray();
+    $new_array = [];
+    for($i = 0; $i < $this->session->userdata('total_train_data'); $i++):
+      $random_int = mt_rand(0, sizeof($init_array)-1);
+      // echo '<br/>Rand: ';
+      // echo $random_int;
+      // echo '<br/>Size: ';
+      // echo sizeof($init_array);
+      // echo '<br/>Max: ';
+      // echo sizeof($init_array)-1;
+      $picked_index = $init_array[$random_int];
+      array_push($new_array, $picked_index);
+      unset($init_array[$random_int]);
+      $init_array = array_values($init_array);
+    endfor;
+    return $new_array;
   }
 
   public function calculation() {
@@ -52,11 +67,13 @@ class performance extends CI_Controller
     // Classifying Naive Bayes
     $this->classifying();
 
-    // Confusion Matrix
+    // uji Perfrma Confusion Matrix
     $this->confusionMatrix();
 
     redirect(base_url('performance'));
   }
+
+  // Confusion Matrix
   public function confusionMatrix() {
     $train_data = $this->session->performance;
     $sesuai = array_filter($train_data, function($item, $index) {
@@ -85,7 +102,7 @@ class performance extends CI_Controller
     $this->session->set_userdata(['confusion_matrix'=>['accuration' => $accurating, 'precition' => $precition, 'recall' => $recall]]);
   }
 
-
+  // Naive Baiyes
   public function classifying() {
     $trainings = $this->Training_Model->getAllDataArray();
     $result = [];
@@ -100,21 +117,26 @@ class performance extends CI_Controller
       $wawancara = array();
 
       // Start Calculating
-      $jumlah_layak = $this->Training_Model->count_layak($this->session->userdata('total_train_data') ?? 0);
-      $jumlah_tidak_layak = $this->Training_Model->count_tidaklayak($this->session->userdata('total_train_data') ?? 0);
+      $jumlah_layak = $this->Training_Model->count_layak();
+      $jumlah_tidak_layak = $this->Training_Model->count_tidaklayak();
       $total_training = $jumlah_layak+$jumlah_tidak_layak;
-      $b_indo = $this->Training_Model->b_indo($row['b_indo']);
-      $agama = $this->Training_Model->agama($row['agama']);
-      $pancasila = $this->Training_Model->pancasila($row['pancasila']);
-      $umum = $this->Training_Model->umum($row['umum']);
-      $kasi_pem = $this->Training_Model->kasi_pem($row['kasi_pem']);
-      $wawancara = $this->Training_Model->wawancara($row['wawancara']);
+      // echo ($this->session->userdata('total_train_data') ?? 0);
+      // echo $jumlah_layak;
+      // echo $jumlah_tidak_layak;
+      // echo $total_training;
+      // return;
+      $b_indo = $this->Training_Model->convert('b_indo',$row['b_indo']);
+      $agama = $this->Training_Model->convert('agama',$row['agama']);
+      $pancasila = $this->Training_Model->convert('pancasila',$row['pancasila']);
+      $umum = $this->Training_Model->convert('umum',$row['umum']);
+      $kasi_pem = $this->Training_Model->convert('kasi_pem',$row['kasi_pem']);
+      $wawancara = $this->Training_Model->convert('wawancara',$row['wawancara']);
 
-      $PC1 = round($jumlah_layak/($jumlah_tidak_layak+$jumlah_layak), 6);
-      $PC0 = round($jumlah_tidak_layak/($jumlah_tidak_layak+$jumlah_layak), 6);
+      $PC1 = round($jumlah_layak/($jumlah_tidak_layak+$jumlah_layak), 2);
+      $PC0 = round($jumlah_tidak_layak/($jumlah_tidak_layak+$jumlah_layak), 2);
       
-      $kelas_layak = round($b_indo['layak'],2)*round($agama['layak'], 9)*round($pancasila['layak'], 9)*round($umum['layak'], 9)*round($kasi_pem['layak'], 9)*round($wawancara['layak'], 9)*$PC1;
-      $kelas_tidak_layak = round($b_indo['tidaklayak'],2)*round($agama['tidaklayak'], 9)*round($pancasila['tidaklayak'], 9)*round($umum['tidaklayak'], 9)*round($kasi_pem['tidaklayak'], 9)*round($wawancara['tidaklayak'], 9)*$PC0;
+      $kelas_layak = round($b_indo['layak'],2)*round($agama['layak'], 2)*round($pancasila['layak'], 2)*round($umum['layak'], 2)*round($kasi_pem['layak'], 2)*round($wawancara['layak'], 2)*$PC1;
+      $kelas_tidak_layak = round($b_indo['tidaklayak'],2)*round($agama['tidaklayak'], 2)*round($pancasila['tidaklayak'], 2)*round($umum['tidaklayak'], 2)*round($kasi_pem['tidaklayak'], 2)*round($wawancara['tidaklayak'], 2)*$PC0;
       
 
       $result = [

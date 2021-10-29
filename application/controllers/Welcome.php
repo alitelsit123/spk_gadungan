@@ -35,7 +35,8 @@ class Welcome extends CI_Controller {
 	{
 
 		$data = array(
-			'title' => "Dashboard"
+			'title' => "Dashboard",
+			'total_data' => sizeof($this->Training_Model->getAllDataArray())
 		);
 		$this->load->view('index', $data);
 		$this->load->view("dist/header");

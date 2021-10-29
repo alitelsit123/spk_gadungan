@@ -16,15 +16,27 @@ class Training_Model extends CI_Model
 
 	public function tambah_data( )
 	{
-		// $jumlah_penghasilan = $this->input->post('jml_penghasilan', true);
+		$nama = $this->input->post('nama', true);
+		$b_indo = $this->input->post('b_indo', true);
+		$agama = $this->input->post('agama', true);
+		$pancasila = $this->input->post('pancasila', true);
+		$umum = $this->input->post('umum', true);
+		$kasi_pem = $this->input->post('kasi_pem', true);
+		$wawancara = $this->input->post('wawancara', true);
 
-		// if ($jumlah_penghasilan > 2500000) {
-		// 	$kat = "tinggi";
-		// }else if($jumlah_penghasilan >= 1500000 && $jumlah_penghasilan <= 2500000){
-		// 	$kat = "sedang";
-		// }else if($jumlah_penghasilan < 1500000){
-		// 	$kat = "rendah";
-		// }
+		$values = [$b_indo, $agama, $pancasila, $umum, $kasi_pem, $wawancara];
+		$status = '';
+		$count = 0;
+		foreach($values as $row) {
+			if($row >= 80) {
+				$count++;
+			}
+		}
+		if($count >= 3) {
+			$status = 'layak';
+		} else {
+			$status = 'tidak layak';
+		}
 
 		$data = array(
 			// 'id_training' => $this->input->post('id_training', true),
@@ -35,7 +47,7 @@ class Training_Model extends CI_Model
 			'umum' => $this->input->post('umum', true),
 			'kasi_pem' => $this->input->post('kasi_pem', true),
 			'wawancara' => $this->input->post('wawancara', true),
-			'status_kelayakan' => $this->input->post('status_kelayakan', true)
+			'status_kelayakan' => $status
 		);
 
 		$this->db->insert('tbl_training', $data);
@@ -69,22 +81,26 @@ class Training_Model extends CI_Model
 
 	public function count_layak($limit = 0)
 	{
-		$this->db->where('status_kelayakan', 'Layak');
-		if($limit > 0) {
-			$this->db->limit($limit);
-		}
-		$this->db->from('tbl_training');
-		return $this->db->count_all_results();
+		$r = $this->db->query('
+		SELECT tb.* FROM (select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit '.
+		($this->session->userdata('total_train_data') ?? 0).
+		') as tb 
+		WHERE tb.status_kelayakan="Layak"
+		');
+		return sizeof($r->result_array());
 	}
 
 	public function count_tidaklayak($limit = 0)
 	{
-		$this->db->where('status_kelayakan', 'Tidak Layak');
-		if($limit > 0) {
-			$this->db->limit($limit);
-		}
-		$this->db->from('tbl_training');
-		return $this->db->count_all_results();
+		// $this->db->where('status_kelayakan', 'Tidak Layak');
+		// $this->db->from('(SELECT * FROM tbl_training order by id desc limit '.$this->session->userdata('total_train_data') ?? 0.')');
+		$r = $this->db->query('
+		SELECT tb.* FROM (select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit '.
+		($this->session->userdata('total_train_data') ?? 0).
+		') as tb 
+		WHERE tb.status_kelayakan="Tidak Layak"
+		');
+		return sizeof($r->result_array());
 	}
 
 	// public function spread() {
@@ -147,30 +163,34 @@ class Training_Model extends CI_Model
 		}
 		$q_layak = $this->db->query("
 			SELECT count(*) as jml FROM (
-			SELECT $table,  status_kelayakan,
+			SELECT tbl_training.$table,  tbl_training.status_kelayakan,
 			CASE
-			WHEN $table > 80 THEN 'tinggi'
-			WHEN $table >= 60 AND $table <= 80 THEN 'sedang'
-			WHEN $table < 60 THEN 'rendah'
+			WHEN tbl_training.$table > 80 THEN 'tinggi'
+			WHEN tbl_training.$table >= 60 AND $table <= 80 THEN 'sedang'
+			WHEN tbl_training.$table < 60 THEN 'rendah'
 			ELSE ''
 			END AS c_b_indo
-			FROM tbl_training 
+			FROM (select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit ".
+			($this->session->userdata('total_train_data') ?? 0).
+			") as tbl_training 
 			) as conversi_b_indo  WHERE c_b_indo ='$kat' AND status_kelayakan = 'layak'
 			")->row();
-		$layak = $q_layak->jml/$this->count_layak();
+		$layak = $q_layak->jml/($this->count_layak() == 0 ? 1: $this->count_layak());
 		$q_tidak = $this->db->query("
 			SELECT count(*) as jml FROM (
-			SELECT $table,  status_kelayakan,
+			SELECT tbl_training.$table,  tbl_training.status_kelayakan,
 			CASE
 			WHEN $table > 80 THEN 'tinggi'
 			WHEN $table >= 60 AND $table <= 80 THEN 'sedang'
 			WHEN $table < 60 THEN 'rendah'
 			ELSE ''
 			END AS c_b_indo
-			FROM tbl_training 
+			FROM (select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit ".
+			($this->session->userdata('total_train_data') ?? 0).
+			") as tbl_training 
 			) as conversi_b_indo  WHERE c_b_indo ='$kat' AND status_kelayakan = 'tidak layak'
 			")->row();
-		$tidak = $q_tidak->jml/$this->count_tidaklayak();
+		$tidak = $q_tidak->jml/($this->count_tidaklayak() == 0 ? 1:$this->count_tidaklayak());
 
 		return array('layak' => $layak, 'tidaklayak' => $tidak);	
 	}

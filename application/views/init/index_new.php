@@ -12,7 +12,7 @@ $this->load->view('dist/header');
     <div class="table-responsive" style="max-height: 500px;">
       <form action="<?= base_url('initialize/set_number_of_train') ?>" method="post" class="w-100">
         <div class="d-flex align-items-center">
-          <label for="" style="width: 100px;">Data Train</label>
+          <label for="" style="width: 100px;">Jumlah</label>
           <input type="number" name="train_data" id="train_data" class="flex-grow-1 form-control mr-2 w-100" max="<?= $max_people ?>" min="1" 
           value="<?= $max_people ?>"
           placeholder="Max <?= $max_people ?>">

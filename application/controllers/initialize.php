@@ -41,7 +41,7 @@ class initialize extends CI_Controller
     $this->load->library('form_validation');
     $this->form_validation->set_rules("train_data", "DataTrain", "required|integer|greater_than[0]|less_than[".$countMax."]");
 		if ($this->form_validation->run() == FALSE):
-      $this->session->set_flashdata('msg', 'Jumlah Data Training Dibutuhkan Min. '.($countMin+1).' Max. '.($countMax-1));
+      $this->session->set_flashdata('msg', 'Jumlah Data Dibutuhkan Min. '.($countMin+1).' Max. '.($countMax-1));
       redirect(base_url('initialize'));
     endif;
     $this->session->set_userdata(['train_data' => []]);

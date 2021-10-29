@@ -8,9 +8,10 @@ $this->load->view('dist/header');
 <div class="main-content">
 <section class="content">
   <div class="card shadow-none">
-    <!-- <div class="card-header">
+    <div class="card-header d-flex justify-content-between">
       <h5 class="card-title">Performance</h5>
-    </div> -->
+      <button class="btn btn-primary" type="button" id="print_btn" onClick="download_table_as_csv('result-table')">Download</button>
+    </div>
     <div class="card-body">
       <!-- list data -->
       <div class="row">
@@ -18,11 +19,11 @@ $this->load->view('dist/header');
           <div class="row">
             <div class="col-md-12">
               <?php if(!empty($this->session->userdata('total_train_data'))): ?>
-              <h6 class="modal-title pb-2">Hasil Uji Data Menggunakan <?= $this->session->userdata('total_train_data') ?> Data Training</h6>
               <div class="table-responsive">
-                <table class="table">
+                <table class="table" id="result-table">
                   <thead>
                     <tr>
+                      <th></th>
                       <th>Nama</th>
                       <th>Probabilitas</th>
                       <th>Kelayakan</th>
@@ -30,10 +31,12 @@ $this->load->view('dist/header');
                     </tr>
                   </thead>
                   <tbody>
-                    <?php foreach($train_data as $row): ?>
+
+                    <?php $i=0; foreach($train_data as $row): ?>
                     <tr>
+                      <td><?= ++$i ?></td>
                       <td><?= $row['nama'] ?></td>
-                      <td><?= $row['result']['value'] ?></td>
+                      <td><?= round($row['result']['value'], 4) ?></td>
                       <td><?= $row['result']['type'] ?></td>
                       <td><?= $row['status'] ?></td>
                     </tr>
@@ -41,7 +44,8 @@ $this->load->view('dist/header');
                   </tbody>
                 </table>
               </div>
-              <div class="row">
+              <div class="row mt-5">
+                <!-- <div class="col-md-4"></div> -->
                 <div class="col-md-4">
                   <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
                     <div class="card-body">
@@ -49,12 +53,13 @@ $this->load->view('dist/header');
                         <div><h5 class="card-title" style="font-size: 56px;"><i class="fa fa-bullhorn"></i></h5></div>
                         <div class="flex-grow-1 text-center">
                           <h5 class="card-title">Accuracy</h5>
-                          <h5 class="card-title"><?= $this->session->confusion_matrix['accuration'] ?>%</h5>
+                          <h5 class="card-title"><?= round($this->session->confusion_matrix['accuration'], 2) ?>%</h5>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+                <!-- <div class="col-md-4"></div> -->
                 <div class="col-md-4">
                   <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
                     <div class="card-body">
@@ -62,7 +67,7 @@ $this->load->view('dist/header');
                         <div><h5 class="card-title" style="font-size: 56px;"><i class="fa fa-phone"></i></h5></div>
                         <div class="flex-grow-1 text-center">
                           <h5 class="card-title">Recall</h5>
-                          <h5 class="card-title"><?= $this->session->confusion_matrix['recall'] ?>%</h5>
+                          <h5 class="card-title"><?= round($this->session->confusion_matrix['recall'], 2) ?>%</h5>
                         </div>
                       </div>
                     </div>
@@ -75,7 +80,7 @@ $this->load->view('dist/header');
                         <div><h5 class="card-title" style="font-size: 56px;"><i class="fa fa-math"></i></h5></div>
                         <div class="flex-grow-1 text-center">
                           <h5 class="card-title">Precision</h5>
-                          <h5 class="card-title"><?= $this->session->confusion_matrix['precition'] ?>%</h5>
+                          <h5 class="card-title"><?= round($this->session->confusion_matrix['precition'], 2) ?>%</h5>
                         </div>
                       </div>
                     </div>
@@ -108,3 +113,37 @@ $this->load->view('dist/header');
   </div>
   
 </section>
+
+<script>
+var print_el = document.getElementById('print_btn');
+function download_table_as_csv(table_id, separator = ',') {
+    // Select rows from table_id
+    var rows = document.querySelectorAll('table#' + table_id + ' tr');
+    // Construct csv
+    var csv = [];
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll('td, th');
+        for (var j = 0; j < cols.length; j++) {
+            // Clean innertext to remove multiple spaces and jumpline (break csv)
+            var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
+            // Escape double-quote with double-double-quote (see https://stackoverflow.com/questions/17808511/properly-escape-a-double-quote-in-csv)
+            data = data.replace(/"/g, '""');
+            // Push escaped string
+            row.push('"' + data + '"');
+        }
+        csv.push(row.join(separator));
+    }
+    var csv_string = csv.join('\n');
+    // Download it
+    var filename = 'laporan' + '_' + new Date().toLocaleDateString() + '.csv';
+    var link = document.createElement('a');
+    link.style.display = 'none';
+    link.setAttribute('target', '_blank');
+    link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+</script>

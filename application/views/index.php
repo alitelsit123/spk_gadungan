@@ -6,7 +6,7 @@ $this->load->view('dist/header');
       <div class="main-content">
         <section class="section">
           <div class="section-header">
-            <h1>Blank Page</h1>
+            <h1>Dashboard</h1>
           </div>
           <div class="row">
             <div class="col-lg-3 col-md-6 col-sm-6 col-12">
@@ -34,7 +34,7 @@ $this->load->view('dist/header');
                     <h4>Total Data</h4>
                   </div>
                   <div class="card-body">
-                    40
+                    <?= $total_data ?>
                   </div>
                 </div>
               </div>
