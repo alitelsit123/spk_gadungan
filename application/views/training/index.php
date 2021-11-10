@@ -21,7 +21,7 @@ $this->load->view('dist/header');
           </div>
           <div class="card-body">
             <div class="table-responsive">
-            <table id="example1" class="table table-bordered table-striped">
+            <table id="example1" class="table table-bordered table-striped"  style="color: black!important;">
               <thead>
                 <tr>
                   <th>No</th>

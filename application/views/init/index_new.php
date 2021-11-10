@@ -46,7 +46,7 @@ $this->load->view('dist/header');
                   <?php
                     $converted_keys = array_keys($converted[0]);
                     foreach($converted_keys as $attr) {
-                      echo '<th>'.$attr.'</th>';
+                      echo '<th>'.($attr != 'status_kelayakan' ? $attr: '(Dataset)'.$attr).'</th>';
                     }
                   ?>
                 </tr>

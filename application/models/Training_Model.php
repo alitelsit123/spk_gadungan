@@ -111,6 +111,13 @@ class Training_Model extends CI_Model
 
   //   return $result;
   // }
+	public function limitedQuery() {
+		return "select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit ".
+			($this->session->userdata('total_train_data') ?? 0);
+	}
+	public function getAllDataAfterLimited() {
+		return $this->db->query($this->limitedQuery())->result_array();
+	}
 	public function getAttributes() {
 		$attributes = array_keys($this->getAllDataArray()[0]);
 		return array_slice($attributes, 2, sizeof($attributes)-3);

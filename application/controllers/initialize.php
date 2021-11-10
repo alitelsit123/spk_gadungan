@@ -3,7 +3,7 @@
 /**
  * 
  */
-class initialize extends CI_Controller
+class Initialize extends CI_Controller
 {
 
 	public function __construct()
@@ -46,14 +46,14 @@ class initialize extends CI_Controller
     endif;
     $this->session->set_userdata(['train_data' => []]);
     $this->session->set_userdata(['total_train_data' => $this->input->post('train_data')]);
-    redirect(base_url('performance/calculation'));
+    redirect(base_url('Performance/calculation'));
   }
 
   public function reset() {
     $this->session->unset_userdata('total_train_data');
     $this->session->unset_userdata('performance');
     $this->session->unset_userdata('confusion_matrix');
-    redirect(base_url('initialize'));
+    redirect(base_url('Initialize'));
   }
 
   

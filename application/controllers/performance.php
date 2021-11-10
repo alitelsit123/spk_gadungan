@@ -3,7 +3,7 @@
 /**
  * 
  */
-class performance extends CI_Controller
+class Performance extends CI_Controller
 {
 
 	public function __construct()
@@ -18,7 +18,6 @@ class performance extends CI_Controller
 	}
 
   public function index() {
-    
     if (empty($this->session->performance)) {
       $this->session->set_flashdata(['msg' => 'Dibutuhkan Jumlah Data Untuk Proses Klasifikasi!']);
       redirect(base_url('initialize'));
@@ -105,6 +104,7 @@ class performance extends CI_Controller
   // Naive Baiyes
   public function classifying() {
     $trainings = $this->Training_Model->getAllDataArray();
+    // $trainings = $this->Training_Model->getAllDataAfterLimited();
     $result = [];
     $results = [];
     foreach($trainings as $row) {
@@ -158,14 +158,20 @@ class performance extends CI_Controller
           'value' => $kelas_layak > $kelas_tidak_layak ? $kelas_layak: $kelas_tidak_layak,
           'default_type' => $row['status_kelayakan']
         ],
+        'value' => $kelas_layak > $kelas_tidak_layak ? $kelas_layak: $kelas_tidak_layak,
+
       ];
-      if($result['result']['type'] == $row['status_kelayakan']) {
+      if(strtolower($result['result']['type']) == strtolower($row['status_kelayakan'])) {
         $result['status'] = 'sesuai';
       } else {
         $result['status'] = 'tidak sesuai';
       }
       array_push($results, $result);
     }
+    usort($results, function ($item1, $item2) {
+        return $item2['value'] <=> $item1['value'];
+    });
+    // $results = array_slice($results, 0, $this->session->userdata('total_train_data'));
     $this->session->set_userdata(['performance' => $results]);
   }
 
