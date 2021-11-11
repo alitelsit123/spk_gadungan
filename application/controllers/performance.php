@@ -98,13 +98,13 @@ class Performance extends CI_Controller
     $accurating = ($TP+$TN)/($TP+$TN+$FP+$FN)*100;
     $precition = ($TP)/($FP+$TP)*100;
     $recall = ($TP)/($FN+$TP)*100;
-    $this->session->set_userdata(['confusion_matrix'=>['accuration' => $accurating, 'precition' => $precition, 'recall' => $recall]]);
+    $this->session->set_userdata(['confusion_matrix'=>['accuration' => $accurating, 'precition' => $precition, 'recall' => $recall, 'details' => ['tp' => $TP, 'tn' => $TN, 'fp' => $FP, 'fn' => $FN]]]);
   }
 
   // Naive Baiyes
   public function classifying() {
-    $trainings = $this->Training_Model->getAllDataArray();
-    // $trainings = $this->Training_Model->getAllDataAfterLimited();
+    // $trainings = $this->Training_Model->getAllDataArray();
+    $trainings = $this->Training_Model->getAllDataAfterLimited('asc');
     $result = [];
     $results = [];
     foreach($trainings as $row) {
@@ -132,11 +132,17 @@ class Performance extends CI_Controller
       $kasi_pem = $this->Training_Model->convert('kasi_pem',$row['kasi_pem']);
       $wawancara = $this->Training_Model->convert('wawancara',$row['wawancara']);
 
-      $PC1 = round($jumlah_layak/($jumlah_tidak_layak+$jumlah_layak), 2);
-      $PC0 = round($jumlah_tidak_layak/($jumlah_tidak_layak+$jumlah_layak), 2);
+      // $PC1 = number_format($jumlah_layak/($jumlah_tidak_layak+$jumlah_layak), 2);
+      // $PC0 = number_format($jumlah_tidak_layak/($jumlah_tidak_layak+$jumlah_layak), 2);
       
-      $kelas_layak = round($b_indo['layak'],2)*round($agama['layak'], 2)*round($pancasila['layak'], 2)*round($umum['layak'], 2)*round($kasi_pem['layak'], 2)*round($wawancara['layak'], 2)*$PC1;
-      $kelas_tidak_layak = round($b_indo['tidaklayak'],2)*round($agama['tidaklayak'], 2)*round($pancasila['tidaklayak'], 2)*round($umum['tidaklayak'], 2)*round($kasi_pem['tidaklayak'], 2)*round($wawancara['tidaklayak'], 2)*$PC0;
+      // $kelas_layak = number_format($b_indo['layak'],2)*number_format($agama['layak'], 2)*number_format($pancasila['layak'], 2)*number_format($umum['layak'], 2)*number_format($kasi_pem['layak'], 2)*number_format($wawancara['layak'], 2)*$PC1;
+      // $kelas_tidak_layak = number_format($b_indo['tidaklayak'],2)*number_format($agama['tidaklayak'], 2)*number_format($pancasila['tidaklayak'], 2)*number_format($umum['tidaklayak'], 2)*number_format($kasi_pem['tidaklayak'], 2)*number_format($wawancara['tidaklayak'], 2)*$PC0;
+
+      $PC1 = ($jumlah_layak/($jumlah_tidak_layak+$jumlah_layak));
+      $PC0 = $jumlah_tidak_layak/($jumlah_tidak_layak+$jumlah_layak);
+      
+      $kelas_layak = $b_indo['layak']*$agama['layak']*$pancasila['layak']*$umum['layak']*$kasi_pem['layak']*$wawancara['layak']*$PC1;
+      $kelas_tidak_layak = $b_indo['tidaklayak']*$agama['tidaklayak']*$pancasila['tidaklayak']*$umum['tidaklayak']*$kasi_pem['tidaklayak']*$wawancara['tidaklayak']*$PC0;
       
 
       $result = [
@@ -149,9 +155,17 @@ class Performance extends CI_Controller
           'kasi_pem' => $kasi_pem,
           'wawancara' => $wawancara,
         ],
+        'jumlah' => [
+          'layak' => $jumlah_layak,
+          'tidaklayak' => $jumlah_tidak_layak,
+        ],
         'probabilitas_prior' => [
           'layak' => $PC1,
           'tidaklayak' => $PC0,
+        ],
+        'kelas' => [
+          'layak' => $kelas_layak,
+          'tidaklayak' => $kelas_tidak_layak,
         ],
         'result' => [
           'type' => $kelas_layak > $kelas_tidak_layak ? 'layak': 'tidak layak',

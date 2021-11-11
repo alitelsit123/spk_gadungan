@@ -27,6 +27,7 @@ $this->load->view('dist/header');
                       <th>Nama</th>
                       <th>Probabilitas</th>
                       <th>Kelayakan</th>
+                      <th>Hasil Test Kelayakan</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -37,10 +38,34 @@ $this->load->view('dist/header');
                       <td><?= ++$i ?></td>
                       <td><?= $row['nama'] ?></td>
                       <td><?= round($row['result']['value'], 4) ?></td>
+                      <td><?= $row['result']['default_type'] ?></td>
                       <td><?= $row['result']['type'] ?></td>
                       <td><?= $row['status'] ?></td>
                     </tr>
                     <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-responsive mt-4">
+                <table class="table text-center">
+                  <thead>
+                    <tr>
+                      <!-- <th></th> -->
+                      <th>TP</th>
+                      <th>TN</th>
+                      <th>FP</th>
+                      <th>FN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php $indx = 0 ?>
+                    <tr>
+                      <!-- <td><?= ++$indx ?></td> -->
+                      <td><?= $this->session->confusion_matrix['details']['tp'] ?></td>
+                      <td><?= $this->session->confusion_matrix['details']['tn'] ?></td>
+                      <td><?= $this->session->confusion_matrix['details']['fp'] ?></td>
+                      <td><?= $this->session->confusion_matrix['details']['fn'] ?></td>
+                    </tr>
                   </tbody>
                 </table>
               </div>

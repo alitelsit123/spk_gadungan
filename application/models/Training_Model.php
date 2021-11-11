@@ -82,7 +82,7 @@ class Training_Model extends CI_Model
 	public function count_layak($limit = 0)
 	{
 		$r = $this->db->query('
-		SELECT tb.* FROM (select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit '.
+		SELECT tb.* FROM (select *, b_indo+agama+pancasila+umum+kasi_pem+wawancara as point FROM tbl_training order by point desc limit '.
 		($this->session->userdata('total_train_data') ?? 0).
 		') as tb 
 		WHERE tb.status_kelayakan="Layak"
@@ -95,7 +95,7 @@ class Training_Model extends CI_Model
 		// $this->db->where('status_kelayakan', 'Tidak Layak');
 		// $this->db->from('(SELECT * FROM tbl_training order by id desc limit '.$this->session->userdata('total_train_data') ?? 0.')');
 		$r = $this->db->query('
-		SELECT tb.* FROM (select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit '.
+		SELECT tb.* FROM (select *, b_indo+agama+pancasila+umum+kasi_pem+wawancara as point FROM tbl_training order by point desc limit '.
 		($this->session->userdata('total_train_data') ?? 0).
 		') as tb 
 		WHERE tb.status_kelayakan="Tidak Layak"
@@ -111,12 +111,12 @@ class Training_Model extends CI_Model
 
   //   return $result;
   // }
-	public function limitedQuery() {
-		return "select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit ".
+	public function limitedQuery($sort = null) {
+		return "select *, b_indo+agama+pancasila+umum+kasi_pem+wawancara as point FROM tbl_training order by point ".($sort ?? 'desc')." limit ".
 			($this->session->userdata('total_train_data') ?? 0);
 	}
-	public function getAllDataAfterLimited() {
-		return $this->db->query($this->limitedQuery())->result_array();
+	public function getAllDataAfterLimited($sort = null) {
+		return $this->db->query($this->limitedQuery($sort))->result_array();
 	}
 	public function getAttributes() {
 		$attributes = array_keys($this->getAllDataArray()[0]);
@@ -177,27 +177,27 @@ class Training_Model extends CI_Model
 			WHEN tbl_training.$table < 60 THEN 'rendah'
 			ELSE ''
 			END AS c_b_indo
-			FROM (select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit ".
+			FROM (select *, b_indo+agama+pancasila+umum+kasi_pem+wawancara as point FROM tbl_training order by point desc limit ".
 			($this->session->userdata('total_train_data') ?? 0).
 			") as tbl_training 
 			) as conversi_b_indo  WHERE c_b_indo ='$kat' AND status_kelayakan = 'layak'
 			")->row();
-		$layak = $q_layak->jml/($this->count_layak() == 0 ? 1: $this->count_layak());
+		$layak = ($this->count_layak() == 0 ? 0: $q_layak->jml/$this->count_layak());
 		$q_tidak = $this->db->query("
 			SELECT count(*) as jml FROM (
 			SELECT tbl_training.$table,  tbl_training.status_kelayakan,
 			CASE
-			WHEN $table > 80 THEN 'tinggi'
-			WHEN $table >= 60 AND $table <= 80 THEN 'sedang'
+			WHEN $table >= 80 THEN 'tinggi'
+			WHEN $table >= 60 AND $table < 80 THEN 'sedang'
 			WHEN $table < 60 THEN 'rendah'
 			ELSE ''
 			END AS c_b_indo
-			FROM (select *, b_indo+agama+pancasila+umum+kasi_pem,wawancara as point FROM tbl_training order by point desc limit ".
+			FROM (select *, b_indo+agama+pancasila+umum+kasi_pem+wawancara as point FROM tbl_training order by point desc limit ".
 			($this->session->userdata('total_train_data') ?? 0).
 			") as tbl_training 
-			) as conversi_b_indo  WHERE c_b_indo ='$kat' AND status_kelayakan = 'tidak layak'
+			) as conversi_b_indo  WHERE conversi_b_indo.c_b_indo ='$kat' AND conversi_b_indo.status_kelayakan = 'tidak layak'
 			")->row();
-		$tidak = $q_tidak->jml/($this->count_tidaklayak() == 0 ? 1:$this->count_tidaklayak());
+		$tidak = ($this->count_tidaklayak() == 0 ? 0:$q_tidak->jml/$this->count_tidaklayak());
 
 		return array('layak' => $layak, 'tidaklayak' => $tidak);	
 	}
